@@ -21,46 +21,53 @@ import java.io.InputStream
 
 class MainActivity : AppCompatActivity() {
     var currentImageUrl: String? = null
+    var progressBar: ProgressBar? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        progressBar = findViewById(R.id.progress_bar);
         loadMemes()
     }
 
     private fun loadMemes() {
+
         val queue = Volley.newRequestQueue(this)
         val url = "https://meme-api.herokuapp.com/gimme"
 
 // Request a string response from the provided URL.
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.GET, url, null,
-            Response.Listener { response ->
-            currentImageUrl = response.getString("url")
+            { response ->
+                currentImageUrl = response.getString("url")
                 Glide.with(this).load(currentImageUrl).into(findViewById(R.id.setMemes))
+
+                progressBar?.visibility = View.GONE
             },
-            Response.ErrorListener {  })
+            { })
 
 // Add the request to the RequestQueue.
         queue.add(jsonObjectRequest)
     }
 
     fun funNext(view: android.view.View) {
+
+        progressBar?.visibility = View.VISIBLE
         loadMemes()
     }
 
     fun funShare(view: android.view.View) {
 
-                val sharingIntent = Intent(Intent.ACTION_SEND)
-                val currentImageUrl: Uri = Uri.parse("android.resource://com.android.test/*")
-                try {
-                    val stream: InputStream? = contentResolver.openInputStream(currentImageUrl)
-                } catch (e: FileNotFoundException) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace()
-                }
-                sharingIntent.type = "image/jpeg"
-                sharingIntent.putExtra(Intent.EXTRA_STREAM, currentImageUrl)
-                startActivity(Intent.createChooser(sharingIntent, "Share image using"))
-            }
+        val sharingIntent = Intent(Intent.ACTION_SEND)
+        val currentImageUrl: Uri = Uri.parse("android.resource://com.android.test/*")
+        try {
+            val stream: InputStream? = contentResolver.openInputStream(currentImageUrl)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        }
+        sharingIntent.type = "image/jpeg"
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, currentImageUrl)
+        startActivity(Intent.createChooser(sharingIntent, "Share image using"))
     }
+}
